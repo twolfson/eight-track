@@ -50,11 +50,28 @@ exports.run = function (port, middlewares) {
   }, port, middlewares);
 };
 
-exports.runHttps = function (port, middlewares) {
+var x509, certsCallback;
+
+exports.certs = function (cb) {
+  if (typeof x509 !== 'undefined') {
+    cb(x509);
+  } else {
+    certsCallback = cb;
+  }
+};
+
+exports.runHttps = function (port, middlewares, requireClientCert) {
   // Generate an HTTPS certificate
   before(function generateCertificate (done) {
     pem.createCertificate({days: 1, selfSigned: true}, function saveCertificate (err, keys) {
       this.certificate = keys;
+      x509 = {key: keys.clientKey, cert: keys.certificate};
+      pem.getPublicKey(x509.cert, function savePublicCert (publicCert) {
+        x509.cert = publicCert;
+        if (typeof certsCallback === 'function') {
+          certsCallback(x509);
+        }
+      });
       done(err);
     });
   });
@@ -62,11 +79,21 @@ exports.runHttps = function (port, middlewares) {
     delete this.certificate;
   });
 
+  // Enable our server to require client certs, use defaults otherwise
+  var requestCert = false;
+  var rejectUnauthorized = false;
+  if (requireClientCert) {
+    requestCert = true;
+    rejectUnauthorized = true;
+  }
+
   // Start the HTTPS server with said certificate
   exports._run(function startHttpsServer (app, port) {
     var server = https.createServer({
       key: this.certificate.serviceKey,
-      cert: this.certificate.certificate
+      cert: this.certificate.certificate,
+      requestCert: requestCert,
+      rejectUnauthorized: rejectUnauthorized
     }, app);
     server.listen(port);
     return server;
