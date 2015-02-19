@@ -45,12 +45,14 @@ describe('An `nine-track` server proxying an HTTPS server', function () {
 });
 
 describe('An `nine-track` server proxying an HTTPS server with cert', function () {
+  var options = {requestCert: true, rejectUnauthorized: true};
+
   serverUtils.runHttps(1337, function (req, res) {
     res.send('oh hai');
-  }, true);
+  }, options);
 
   serverUtils.runNineServer(1338, {
-    fixtureDir: __dirname + '/actual-files/redirect',
+    fixtureDir: __dirname + '/actual-files/https',
     url: 'https://localhost:1337/',
     agentOptions: {
       cert: serverUtils.certs(function (x509) {
@@ -63,9 +65,6 @@ describe('An `nine-track` server proxying an HTTPS server with cert', function (
   });
 
   describe('when requested', function () {
-    before(function allowSelfSignedCert () {
-      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-    });
     httpUtils.save('http://localhost:1338/');
 
     it('proxies to the server', function () {

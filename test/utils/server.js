@@ -60,7 +60,7 @@ exports.certs = function (cb) {
   }
 };
 
-exports.runHttps = function (port, middlewares, requireClientCert) {
+exports.runHttps = function (port, middlewares, options) {
   // Generate an HTTPS certificate
   before(function generateCertificate (done) {
     pem.createCertificate({days: 1, selfSigned: true}, function saveCertificate (err, keys) {
@@ -80,20 +80,15 @@ exports.runHttps = function (port, middlewares, requireClientCert) {
   });
 
   // Enable our server to require client certs, use defaults otherwise
-  var requestCert = false;
-  var rejectUnauthorized = false;
-  if (requireClientCert) {
-    requestCert = true;
-    rejectUnauthorized = true;
-  }
+  options = options || {requestCert: false, rejectUnauthorized: false};
 
   // Start the HTTPS server with said certificate
   exports._run(function startHttpsServer (app, port) {
     var server = https.createServer({
       key: this.certificate.serviceKey,
       cert: this.certificate.certificate,
-      requestCert: requestCert,
-      rejectUnauthorized: rejectUnauthorized
+      requestCert: options.requestCert,
+      rejectUnauthorized: options.rejectUnauthorized
     }, app);
     server.listen(port);
     return server;
