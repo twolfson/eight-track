@@ -28,7 +28,9 @@ pem.createCertificate({days: 1, selfSigned: true}, function handleCertificate (e
     // Start an HTTPS server using our certificate
     var server = https.createServer({
       key: keys.serviceKey,
-      cert: keys.certificate
+      cert: keys.certificate,
+      requestCert: true,
+      rejectUnauthorized: true
     }, function handleRequest (req, res) {
       res.end('hello');
     });
@@ -36,8 +38,10 @@ pem.createCertificate({days: 1, selfSigned: true}, function handleCertificate (e
 
     // Send a request to our server
     request({
-      cert: keys.certificate,
-      key: keys.clientKey,
+      agentOptions: {
+        cert: keys.certificate,
+        key: keys.clientKey
+      },
       url: 'https://localhost:3000/'
     }, function handleResponse (err, res, body) {
       // If there is an error, throw it
