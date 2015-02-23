@@ -17,13 +17,13 @@ pem.createCertificate({days: 1, selfSigned: true}, function handleCertificate (e
 
   // Generate a public key for our certificate
   // TODO: It looks like the callback is using `err`
-  pem.getPublicKey(keys.certificate, function handlePublicKey (err, publicCertObj) {
+  pem.getPublicKey(keys.certificate, function handlePublicKey (err, publicKeyObj) {
     // If there is an error, throw it
     if (err) {
       throw err;
     }
 
-    // publicCertObj = {publicKey}
+    // publicKeyObj = {publicKey}
 
     // Start an HTTPS server using our certificate
     var server = https.createServer({
@@ -36,11 +36,16 @@ pem.createCertificate({days: 1, selfSigned: true}, function handleCertificate (e
     });
     server.listen(3000);
 
+    console.log({
+        cert: keys.certificate,
+        key: publicKeyObj.publicKey
+      });
+
     // Send a request to our server
     request({
       agentOptions: {
         cert: keys.certificate,
-        key: keys.clientKey
+        key: publicKeyObj.publicKey
       },
       url: 'https://localhost:3000/'
     }, function handleResponse (err, res, body) {
