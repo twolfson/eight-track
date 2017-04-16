@@ -41,12 +41,12 @@
   },
   "devDependencies": {
     "body-parser": "~1.11.0",
+    "certy": "^1.0.3",
     "chai": "~1.8.1",
     "express": "~3.4.7",
     "jscs": "~1.10.0",
     "jshint": "~2.5.10",
     "mocha": "~1.11.0",
-    "pem": "~1.4.0",
     "raw-body": "~1.1.5",
     "request-mocha": "~0.2.0",
     "rimraf": "~2.2.5",
